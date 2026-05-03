@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: Aieditor-worker-main   # ← add this
+        working-directory: Aieditor-worker-main
 
     steps:
       - name: Checkout code
@@ -28,6 +28,12 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
+      - name: Download Gradle Wrapper JAR
+        run: |
+          mkdir -p gradle/wrapper
+          curl -L "https://github.com/gradle/gradle/raw/v8.5.0/gradle/wrapper/gradle-wrapper.jar" \
+            -o gradle/wrapper/gradle-wrapper.jar
+
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
@@ -41,10 +47,10 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: CodeAI-debug
-          path: Aieditor-worker-main/app/build/outputs/apk/debug/*.apk   # ← fix path
+          path: Aieditor-worker-main/app/build/outputs/apk/debug/*.apk
 
       - name: Upload Release APK
         uses: actions/upload-artifact@v4
         with:
           name: CodeAI-release
-          path: Aieditor-worker-main/app/build/outputs/apk/release/*.apk  # ← fix path
+          path: Aieditor-worker-main/app/build/outputs/apk/release/*.apk
