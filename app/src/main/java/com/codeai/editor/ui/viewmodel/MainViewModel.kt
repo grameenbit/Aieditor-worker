@@ -39,8 +39,11 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private val _apiKey = MutableStateFlow("")
     val apiKey: StateFlow<String> = _apiKey.asStateFlow()
 
-    private val _selectedModel = MutableStateFlow("gemini-2.0-flash")
+    private val _selectedModel = MutableStateFlow("gemini-3-flash")
     val selectedModel: StateFlow<String> = _selectedModel.asStateFlow()
+
+    private val _useStreaming = MutableStateFlow(true)
+    val useStreaming: StateFlow<Boolean> = _useStreaming.asStateFlow()
 
     private val _projectPath = MutableStateFlow("")
     val projectPath: StateFlow<String> = _projectPath.asStateFlow()
@@ -104,6 +107,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         _editorContent.value = content
     }
 
+    fun toggleStreaming() {
+        _useStreaming.value = !_useStreaming.value
+    }
+
     fun sendMessage(userMessage: String) {
         if (userMessage.isBlank() || _apiKey.value.isBlank()) return
 
@@ -120,20 +127,42 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
                 val apiMessages = updatedMessages.dropLast(1) + ChatMessage("user", contextMessage)
 
-                val response = apiClient.sendMessage(
-                    _apiKey.value, _selectedModel.value,
-                    apiMessages, AiSystemPrompt.SYSTEM_PROMPT
-                )
+                if (_useStreaming.value) {
+                    _chatMessages.value = _chatMessages.value + ChatMessage("assistant", "")
+                    val streamingIdx = _chatMessages.value.size - 1
+                    var fullResponse = ""
 
-                val actions = AiResponseParser.parse(response)
-                val messageActions = actions.filterIsInstance<AiAction.Message>()
-                val fileActions = actions.filter { it !is AiAction.Message }
+                    apiClient.streamMessage(
+                        _apiKey.value, _selectedModel.value,
+                        apiMessages, AiSystemPrompt.SYSTEM_PROMPT
+                    ).collect { chunk ->
+                        fullResponse += chunk
+                        val updated = _chatMessages.value.toMutableList()
+                        updated[streamingIdx] = ChatMessage("assistant", fullResponse)
+                        _chatMessages.value = updated
+                    }
 
-                val aiText = messageActions.joinToString("\n") { (it as AiAction.Message).text }
-                _chatMessages.value = _chatMessages.value + ChatMessage("assistant", aiText.ifEmpty { response })
+                    val actions = AiResponseParser.parse(fullResponse)
+                    val fileActions = actions.filter { it !is AiAction.Message }
+                    if (fileActions.isNotEmpty()) {
+                        _pendingActions.value = fileActions
+                    }
+                } else {
+                    val response = apiClient.sendMessage(
+                        _apiKey.value, _selectedModel.value,
+                        apiMessages, AiSystemPrompt.SYSTEM_PROMPT
+                    )
 
-                if (fileActions.isNotEmpty()) {
-                    _pendingActions.value = fileActions
+                    val actions = AiResponseParser.parse(response)
+                    val messageActions = actions.filterIsInstance<AiAction.Message>()
+                    val fileActions = actions.filter { it !is AiAction.Message }
+
+                    val aiText = messageActions.joinToString("\n") { (it as AiAction.Message).text }
+                    _chatMessages.value = _chatMessages.value + ChatMessage("assistant", aiText.ifEmpty { response })
+
+                    if (fileActions.isNotEmpty()) {
+                        _pendingActions.value = fileActions
+                    }
                 }
             } catch (e: Exception) {
                 _chatMessages.value = _chatMessages.value + ChatMessage("assistant", "Error: ${e.message}")

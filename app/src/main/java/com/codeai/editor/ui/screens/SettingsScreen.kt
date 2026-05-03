@@ -22,18 +22,17 @@ fun SettingsScreen(viewModel: MainViewModel) {
     val apiKey by viewModel.apiKey.collectAsState()
     val selectedModel by viewModel.selectedModel.collectAsState()
     val projectPath by viewModel.projectPath.collectAsState()
+    val useStreaming by viewModel.useStreaming.collectAsState()
 
     var apiKeyInput by remember(apiKey) { mutableStateOf(apiKey) }
     var projectPathInput by remember(projectPath) { mutableStateOf(projectPath) }
     var modelExpanded by remember { mutableStateOf(false) }
 
     val models = listOf(
-        "gemini-2.0-flash" to "Gemini 2.0 Flash",
-        "gemini-2.0-flash-lite" to "Gemini 2.0 Flash Lite",
-        "gemini-1.5-pro" to "Gemini 1.5 Pro",
-        "gemini-1.5-flash" to "Gemini 1.5 Flash",
-        "gemini-2.5-pro-preview-05-06" to "Gemini 2.5 Pro",
-        "gemini-2.5-flash-preview-04-17" to "Gemini 2.5 Flash"
+        "gemini-3-flash" to "Gemini 3 Flash (Fast)",
+        "gemini-3.1-flash-lite" to "Gemini 3.1 Flash Lite (Budget)",
+        "gemini-2.5-pro" to "Gemini 2.5 Pro (Reasoning)",
+        "gemini-3.1-pro" to "Gemini 3.1 Pro (Most Powerful)"
     )
 
     Column(
@@ -134,6 +133,31 @@ fun SettingsScreen(viewModel: MainViewModel) {
                     onClick = { viewModel.setProjectPath(projectPathInput) },
                     colors = ButtonDefaults.buttonColors(containerColor = EditorPrimary)
                 ) { Text("Open Project") }
+            }
+        }
+
+        Surface(color = EditorSurface, shape = RoundedCornerShape(12.dp)) {
+            Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Text("Streaming Response", color = EditorText, fontSize = 14.sp)
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+                ) {
+                    Text(
+                        if (useStreaming) "Enabled — real-time typing effect"
+                        else "Disabled — wait for full response",
+                        color = EditorTextDim, fontSize = 12.sp
+                    )
+                    Switch(
+                        checked = useStreaming,
+                        onCheckedChange = { viewModel.toggleStreaming() },
+                        colors = SwitchDefaults.colors(
+                            checkedThumbColor = EditorPrimary,
+                            checkedTrackColor = EditorPrimary.copy(alpha = 0.3f)
+                        )
+                    )
+                }
             }
         }
     }

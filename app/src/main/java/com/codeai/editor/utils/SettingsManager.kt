@@ -17,7 +17,7 @@ class SettingsManager(private val context: Context) {
     }
 
     val apiKey: Flow<String> = context.dataStore.data.map { it[API_KEY] ?: "" }
-    val model: Flow<String> = context.dataStore.data.map { it[MODEL] ?: "gemini-2.0-flash" }
+    val model: Flow<String> = context.dataStore.data.map { it[MODEL] ?: "gemini-3-flash" }
     val projectPath: Flow<String> = context.dataStore.data.map { it[PROJECT_PATH] ?: "" }
 
     suspend fun saveApiKey(key: String) {
