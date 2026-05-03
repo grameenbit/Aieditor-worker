@@ -10,6 +10,9 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: Aieditor-worker-main   # ← add this
 
     steps:
       - name: Checkout code
@@ -38,10 +41,10 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: CodeAI-debug
-          path: app/build/outputs/apk/debug/*.apk
+          path: Aieditor-worker-main/app/build/outputs/apk/debug/*.apk   # ← fix path
 
       - name: Upload Release APK
         uses: actions/upload-artifact@v4
         with:
           name: CodeAI-release
-          path: app/build/outputs/apk/release/*.apk
+          path: Aieditor-worker-main/app/build/outputs/apk/release/*.apk  # ← fix path
