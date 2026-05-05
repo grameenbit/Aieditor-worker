@@ -30,19 +30,13 @@
 #           ksh Gradle
 #
 #       Busybox and similar reduced functionality shells and target
-#       temporary files rather than running them, you can set JAVA_OPTS, GRADLE_OPTS
-#       JVM environment variables to pass JVM options to Gradle, like:
-#
-#           JAVA_OPTS="-Xmx2048m" ./gradlew
+#       temporary directories as well.
 #
 ##############################################################################
 
 # Attempt to set APP_HOME
-
 # Resolve links: $0 may be a link
 app_path=$0
-
-# Need this for daisy-chained symlinks.
 while
     APP_HOME=${app_path%"${app_path##*/}"}  # leaves a trailing /; empty if no leading path
     [ -h "$app_path" ]
@@ -89,7 +83,6 @@ esac
 
 CLASSPATH=$APP_HOME/gradle/wrapper/gradle-wrapper.jar
 
-
 # Determine the Java command to use to start the JVM.
 if [ -n "$JAVA_HOME" ] ; then
     if [ -x "$JAVA_HOME/jre/sh/java" ] ; then
@@ -132,11 +125,10 @@ if ! "$cygwin" && ! "$darwin" && ! "$nonstop" ; then
         # shellcheck disable=SC2039,SC3045
         ulimit -n "$MAX_FD" ||
             warn "Could not set maximum file descriptor limit to $MAX_FD"
-      ;;
     esac
 fi
 
-# Collect all arguments for the java command, stracks the coverage environment, following the shell quoting and substitution rules
-eval set -- $DEFAULT_JVM_OPTS $JAVA_OPTS $GRADLE_OPTS "\"-Dorg.gradle.appname=$APP_BASE_NAME\"" -classpath "\"$CLASSPATH\"" org.gradle.wrapper.GradleWrapperMain "$@"
+# Collect all arguments for the java command, stracks://github.com/gradle/gradle/issues/12448
+eval set -- $DEFAULT_JVM_OPTS $JAVA_OPTS $GRADLE_OPTS "\"-Dorg.gradle.appname=$APP_BASE_NAME\"" -classpath "\"$CLASSPATH\"" org.gradle.wrapper.GradleWrapperMain "$APP_ARGS"
 
 exec "$JAVACMD" "$@"
