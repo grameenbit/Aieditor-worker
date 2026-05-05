@@ -1,6 +1,6 @@
 # CodeAI - Android Code Editor with AI Integration
 
-## Project Structure (Root Level)
+## Project Structure
 
 ```
 .github/
@@ -14,25 +14,34 @@ CodeAI/                            # Android app source code
   ├── gradle/                      # Gradle wrapper files
   ├── app/                         # Main app module
   │   ├── build.gradle.kts         # App build config
-  │   ├── proguard-rules.pro       # ProGuard rules
-  │   └── src/main/                # Source code
+  │   ├── proguard-rules.pro
+  │   └── src/main/
   │       ├── AndroidManifest.xml
   │       ├── java/com/codeai/editor/
   │       │   ├── MainActivity.kt
-  │       │   ├── ui/              # UI components & screens
-  │       │   ├── data/            # Data layer (API, models, repo)
-  │       │   └── utils/           # Utility classes
-  │       └── res/                 # Resources
-├── .gitignore
-├── gradle.properties
-└── README.md
+  │       │   ├── ui/
+  │       │   ├── data/
+  │       │   └── utils/
+  │       └── res/
+  ├── .gitignore
+  ├── gradle.properties
+  └── README.md
 ```
 
-## Key Changes
+## Key Fixes Applied
 
-### GitHub Actions Workflow Fix
-- **Problem**: `gradlew` was not found because workflow expected it at root level
-- **Solution**: Moved workflow to `.github/workflows/` at root level and updated paths to reference `CodeAI/gradlew` with proper `working-directory`
+### 1. Gradle Wrapper CRLF Fix
+- **Problem**: `gradlew` file had Windows CRLF line endings
+- **Error**: `Could not find or load main class "-Xmx64m"`
+- **Root Cause**: CRLF line endings caused shell to not properly execute the gradlew script, leading Java to misinterpret arguments
+- **Solution**: 
+  - Rewrote `gradlew` with proper Unix LF line endings
+  - Added `sed -i 's/\r$//' gradlew` in CI workflow as safety net
+  - Workflow uses `working-directory: CodeAI` to point to correct location
+
+### 2. Workflow Path Fix
+- **Problem**: `gradlew` was not found at repository root
+- **Solution**: Workflow at `.github/workflows/` uses `working-directory: CodeAI` for all Gradle commands
 
 ## Features
 - Code editor with syntax highlighting

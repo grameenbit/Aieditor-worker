@@ -20,18 +20,20 @@ jobs:
       with:
         java-version: '17'
         distribution: 'temurin'
-        cache: gradle
 
     - name: Grant execute permission for gradlew
-      run: chmod +x CodeAI/gradlew
+      working-directory: CodeAI
+      run: |
+        sed -i 's/\r$//' gradlew
+        chmod +x gradlew
 
     - name: Build Debug APK
       working-directory: CodeAI
-      run: ./gradlew assembleDebug
+      run: ./gradlew assembleDebug --no-daemon --stacktrace
 
     - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
         name: app-debug
-        path: CodeAI/app/build/outputs/apk/debug/*.apk
-        retention-days: 7
+        path: CodeAI/app/build/outputs/apk/debug/app-debug.apk
+        if-no-files-found: warn
