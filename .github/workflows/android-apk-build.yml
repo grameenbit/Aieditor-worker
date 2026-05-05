@@ -19,23 +19,29 @@ jobs:
       with:
         java-version: '17'
         distribution: 'temurin'
-        cache: gradle
 
-    - name: Fix gradlew line endings
-      run: sed -i 's/\r$//' gradlew
+    - name: Setup Gradle
+      uses: gradle/actions/setup-gradle@v4
+      with:
+        gradle-version: '8.5'
+
+    - name: Delete corrupted gradle wrapper jar
+      run: rm -f gradle/wrapper/gradle-wrapper.jar
+
+    - name: Regenerate Gradle Wrapper
+      run: gradle wrapper --gradle-version 8.5
+
+    - name: Verify Gradle Wrapper
+      run: |
+        echo "=== gradle-wrapper.jar info ==="
+        ls -la gradle/wrapper/gradle-wrapper.jar
+        file gradle/wrapper/gradle-wrapper.jar
 
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
 
-    - name: Check gradle wrapper jar
-      run: |
-        echo "Checking gradle wrapper jar..."
-        ls -la gradle/wrapper/
-        if [ ! -f "gradle/wrapper/gradle-wrapper.jar" ]; then
-          echo "gradle-wrapper.jar is missing!"
-          exit 1
-        fi
-        file gradle/wrapper/gradle-wrapper.jar
+    - name: Fix gradlew line endings
+      run: sed -i 's/\r$//' gradlew
 
     - name: Build Debug APK
       run: ./gradlew assembleDebug --no-daemon --stacktrace
@@ -44,5 +50,5 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: app-debug
-        path: app/build/outputs/apk/debug/app-debug.apk
+        path: app/build/outputs/apk/debug/*.apk
         retention-days: 5
