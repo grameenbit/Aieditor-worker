@@ -1,47 +1,50 @@
 # CodeAI - Android Code Editor with AI Integration
 
-## Project Structure
+## Project Structure (Root Level)
 
 ```
 .github/
   └── workflows/
       └── android-apk-build.yml    # GitHub Actions CI/CD workflow
-CodeAI/                            # Android app source code
-  ├── build.gradle.kts             # Root build configuration
-  ├── settings.gradle.kts          # Project settings
-  ├── gradlew                      # Gradle wrapper (Unix)
-  ├── gradlew.bat                  # Gradle wrapper (Windows)
-  ├── gradle/                      # Gradle wrapper files
-  ├── app/                         # Main app module
-  │   ├── build.gradle.kts         # App build config
-  │   ├── proguard-rules.pro
-  │   └── src/main/
-  │       ├── AndroidManifest.xml
-  │       ├── java/com/codeai/editor/
-  │       │   ├── MainActivity.kt
-  │       │   ├── ui/
-  │       │   ├── data/
-  │       │   └── utils/
-  │       └── res/
-  ├── .gitignore
-  ├── gradle.properties
-  └── README.md
+app/                               # Main app module
+  ├── build.gradle.kts             # App build config
+  ├── proguard-rules.pro
+  └── src/main/
+      ├── AndroidManifest.xml
+      ├── java/com/codeai/editor/
+      │   ├── MainActivity.kt
+      │   ├── ui/
+      │   ├── data/
+      │   └── utils/
+      └── res/
+build.gradle.kts                   # Root build configuration
+settings.gradle.kts                # Project settings
+gradlew                            # Gradle wrapper (Unix)
+gradlew.bat                        # Gradle wrapper (Windows)
+gradle/                            # Gradle wrapper files
+  └── wrapper/
+      ├── gradle-wrapper.jar
+      └── gradle-wrapper.properties
+.gitignore
+gradle.properties
+README.md
 ```
 
 ## Key Fixes Applied
 
-### 1. Gradle Wrapper CRLF Fix
-- **Problem**: `gradlew` file had Windows CRLF line endings
-- **Error**: `Could not find or load main class "-Xmx64m"`
-- **Root Cause**: CRLF line endings caused shell to not properly execute the gradlew script, leading Java to misinterpret arguments
-- **Solution**: 
-  - Rewrote `gradlew` with proper Unix LF line endings
-  - Added `sed -i 's/\r$//' gradlew` in CI workflow as safety net
-  - Workflow uses `working-directory: CodeAI` to point to correct location
+### 1. Project Flattening
+- **Problem**: Project was inside a `CodeAI/` subdirectory, causing `No such file or directory` errors in CI when it expected files at root or incorrectly referenced the folder.
+- **Solution**: Moved all project files from `CodeAI/` to the repository root.
+- **Result**: Standard Android project structure that works seamlessly with CI/CD runners.
 
-### 2. Workflow Path Fix
-- **Problem**: `gradlew` was not found at repository root
-- **Solution**: Workflow at `.github/workflows/` uses `working-directory: CodeAI` for all Gradle commands
+### 2. Workflow Cleanup
+- **Problem**: The GitHub Actions workflow still looked for a `CodeAI` directory that no longer existed.
+- **Solution**: Removed all `working-directory: CodeAI` declarations from `.github/workflows/android-apk-build.yml`.
+- **Result**: CI now correctly executes from the root directory.
+
+### 3. Gradle Wrapper CRLF Fix
+- **Problem**: `gradlew` file had Windows CRLF line endings.
+- **Solution**: Rewrote `gradlew` with proper Unix LF line endings and added `sed` cleanup in the workflow.
 
 ## Features
 - Code editor with syntax highlighting
